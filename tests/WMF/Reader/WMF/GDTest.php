@@ -202,6 +202,28 @@ class GDTest extends AbstractTestReader
         $this->assertEquals((int) ceil(2035 / 1440 * 72), imagesy($image));
     }
 
+    public function testLoadStandardWMFWithoutMapMode(): void
+    {
+        // META_HEADER, META_SETWINDOWEXT (200 x 100) and META_EOF : no META_SETMAPMODE record
+        $content = pack('v3VvVv', 1, 9, 0x0300, 17, 0, 5, 0)
+            . pack('Vv', 5, 0x020C) . pack('s2', 100, 200)
+            . pack('Vv', 3, 0x0000);
+
+        // On PHP 8.5, using null as an array offset is deprecated : the deprecation must not reach the error handler
+        $errorReporting = error_reporting(E_ALL);
+        try {
+            $reader = new GD();
+            $this->assertTrue($reader->loadFromString($content));
+        } finally {
+            error_reporting($errorReporting);
+        }
+
+        // Without a map mode, the window is measured with 1440 units per inch
+        $image = $reader->getResource();
+        $this->assertEquals((int) ceil(200 / 1440 * 72), imagesx($image));
+        $this->assertEquals((int) ceil(100 / 1440 * 72), imagesy($image));
+    }
+
     public function testLoadStandardWMFWithoutWindow(): void
     {
         $this->expectException(WMFException::class);

@@ -317,7 +317,7 @@ class GD extends ReaderAbstract
             'top' => $origin[1],
             'right' => $origin[0] + $extent[0],
             'bottom' => $origin[1] + $extent[1],
-            'inch' => $unitsPerInch[$mapMode] ?? 1440,
+            'inch' => $mapMode !== null ? ($unitsPerInch[$mapMode] ?? 1440) : 1440,
         ];
     }
 
